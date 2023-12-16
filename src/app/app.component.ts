@@ -2,17 +2,19 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 
+import { SimpleEntityComponent } from "./simple-entity/simple-entity.component";
+
+
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [
+    SimpleEntityComponent
+  ],
   template: `
-    <h1>Welcome to {{title}}!</h1>
-
-    <router-outlet></router-outlet>
+    <app-simple-entity></app-simple-entity>
   `,
   styles: [],
 })
 export class AppComponent {
-  title = 'howto-ngrx';
 }
