@@ -57,7 +57,7 @@ npm install @ngrx/store --save
 
 Configure you app to provide the store, through your Angular project's `app.config.ts`:
 
-```
+```typescript
 export const appConfig: ApplicationConfig = {
   providers: [
     provideStore(),
@@ -71,9 +71,21 @@ So far nothing else was defined, so the store is empty (like an empty object `{}
 there is nothing to query from it, and there is nothing to change it.
 
 
+## Enable NgRx Entities
+
+Have the `@ngrx/entity` library added to your project:
+
+```
+npm install @ngrx/entity --save
+```
+
+This changes nothing in your application yet, it only provides the
+NgRx framework code to handle entity collections.
+
+
 ## Simple Entity Collection Example
 
-For starters, consider the following entity `SimpleEntity`:
+Consider the following `SimpleEntity`:
 
 ```typescript
 export type SimpleEntity = {
@@ -84,6 +96,7 @@ export type SimpleEntity = {
 
 In this example, we will define a collection `SimpleEntity[]` in the store,
 and means to query and change the collection.
+
 
 ### Feature Key and Actions
 
@@ -116,7 +129,7 @@ export const {
 } = actions;
 ```
 
-Which by the way is equivalent to:
+Which by the way would be equivalent to:
 
 ```typescript
 // don't use this !!!
@@ -126,8 +139,66 @@ export const addSimpleEntity = createAction(
 );
 ```
 
+What this does:
+
+- define a `SIMPLE_ENTITIES_FEATURE_KEY` string value, to distinguish this NgRx feature from other NgRx features
+    - here, this will serve as the first part of the action identifier
+    - later, this will serve as top-level identifier of the collection in the NgRx store (used by the NgRx reducer in the next section)
+- define a `addSimpleEntity` action
+    - note: using `createActionGroup`, we create a namespaced `action.createActionGroup` before
+        - those actions that are to be triggered by external code may be exported outside of `actions`, for easier use
+        - those actions that are used internally to chain up events can remain scoped in `actions`, without public export
+    - note: as you see, the NgRx API uses the terms `action` and `event` interchangeably
+- only for very simple code, `createAction` may be an option; in allmost all real-world cases, or as soon as you have more than one
+  action, `createActionGroup` is more concise
 
 
+### Feature State, Reducer and Selectors
+
+For a `SimpleEntity[]` collection with `SimpleEntity.name` as unique identifer,
+an NgRx `EntityAdapter` provides all standard methods.
+
+```typescript
+const adapter = createEntityAdapter<SimpleEntity>({ selectId: it => it.name });
+```
+
+This provides use with methods like `adapter.getInitialState()`, `adapter.addOne()`, `adapter.selectAll()`, and more.
+
+This `adapter` helps in writing the reducer that defines the state initialization and transition:
+
+```typescript
+export const SIMPLE_ENTITIES_REDUCER = createReducer(
+  adapter.getInitialState(),
+  on(actions.addSimpleEntity, (state: EntityState<SimpleEntity>, it: SimpleEntity): EntityState<SimpleEntity> => adapter.addOne(it, state)),
+  // ... more `on()` reducers later
+);
+```
+
+To make the reducer active for a particular feature, we need to add it as a provider:
+
+```typescript
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideState({ name: SIMPLE_ENTITIES_FEATURE_KEY, reducer: SIMPLE_ENTITIES_REDUCER }),
+    // ... and more providers
+  ]
+};
+```
+
+Here, `SIMPLE_ENTITIES_FEATURE_KEY` denotes the top level entry in the NgRx store, and `SIMPLE_ENTITIES_REDUCER`
+defines how this entry is first initialized and then updated by actions.
+
+Finally, define selectors to query the state:
+
+```typescript
+const selectFeature = createFeatureSelector<EntityState<SimpleEntity>>(SIMPLE_ENTITIES_FEATURE_KEY);
+
+const {
+  selectAll,
+} = adapter.getSelectors();
+
+export const allEntities = createSelector(selectFeature, selectAll);
+```
 
 
 

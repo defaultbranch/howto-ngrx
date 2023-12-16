@@ -7,6 +7,7 @@ import { provideStore } from '@ngrx/store';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideStore()
+    provideStore(),
+    provideState({ name: SIMPLE_ENTITIES_FEATURE_KEY, reducer: SIMPLE_ENTITIES_REDUCER }),
   ]
 };
