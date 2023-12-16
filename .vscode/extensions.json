@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "angular.ng-template",
+    "eamodio.gitlens",
+    "pkief.material-icon-theme",
+    "gruntfuggly.todo-tree"
+  ]
+}

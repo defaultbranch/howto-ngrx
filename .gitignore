@@ -1,0 +1,5 @@
+# prefer a leading / to stop .gitignore from affecting subdirectories...
+
+/node_modules/
+/dist/
+/.angular/
