@@ -175,17 +175,6 @@ export const SIMPLE_ENTITIES_REDUCER = createReducer(
 );
 ```
 
-To make the reducer active for a particular feature, we need to add it as a provider:
-
-```typescript
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideState({ name: SIMPLE_ENTITIES_FEATURE_KEY, reducer: SIMPLE_ENTITIES_REDUCER }),
-    // ... and more providers
-  ]
-};
-```
-
 Here, `SIMPLE_ENTITIES_FEATURE_KEY` denotes the top level entry in the NgRx store, and `SIMPLE_ENTITIES_REDUCER`
 defines how this entry is first initialized and then updated by actions.
 
@@ -201,6 +190,36 @@ const {
 export const allEntities = createSelector(selectFeature, selectAll);
 ```
 
+### Use in an Angular Application
+
+If modularization is of no concern, you can simply provide feature states in `ApplicationConfig.providers`:
+
+```typescript
+// don't do this in your projects !! (don't declare features in the global app config)
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideState({ name: SIMPLE_ENTITIES_FEATURE_KEY, reducer: SIMPLE_ENTITIES_REDUCER }),
+    // ... and more providers
+  ]
+};
+```
+
+This makes the previously declared `allEntities` available for populating view model data:
+
+```typescript
+@Component({ ( /* ...no particular imports required */ )})
+export class SimpleEntityComponent {
+
+  simpleEntities$: Observable<SimpleEntity[]>;
+
+  constructor(store: Store) {
+    this.simpleEntities$ = store.select(allEntities);
+  }
+}
+```
+
+Note: Importing or providing NgRx states and effects via `ApplicationConfig.providers`
+is bad practice for large projects. Consider putting them into modules instead.
 
 
 # Rest
