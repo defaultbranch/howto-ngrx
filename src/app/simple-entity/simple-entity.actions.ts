@@ -1,5 +1,5 @@
 import { createActionGroup, props } from "@ngrx/store";
-import { Ciudad } from "./ciudad";
+import { SimpleEntity } from "./simple-entity";
 
 export const SIMPLE_ENTITIES_FEATURE_KEY = 'simple-entities';
 

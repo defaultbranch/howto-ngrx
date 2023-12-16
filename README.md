@@ -1,7 +1,8 @@
 # About
 
-This project documents the way I prefer to use [NgRx](https://ngrx.io/),
-focusing on different aspects and providing examples.
+This project documents my preferred way of using [NgRx](https://ngrx.io/),
+focusing on different aspects and providing examples condensed from
+real-life applications.
 
 
 ## Why NgRx, and Caveats

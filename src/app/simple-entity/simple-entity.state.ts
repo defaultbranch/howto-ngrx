@@ -1,6 +1,9 @@
 import { EntityState, createEntityAdapter } from "@ngrx/entity";
 import { createFeatureSelector, createReducer, createSelector, on } from "@ngrx/store";
 
+import { SimpleEntity } from './simple-entity';
+import { SIMPLE_ENTITIES_FEATURE_KEY, actions } from './simple-entity.actions';
+
 const adapter = createEntityAdapter<SimpleEntity>({ selectId: it => it.name });
 
 export const SIMPLE_ENTITIES_REDUCER = createReducer(
