@@ -222,6 +222,64 @@ Note: Importing or providing NgRx states and effects via `ApplicationConfig.prov
 is bad practice for large projects. Consider putting them into modules instead.
 
 
+## Nest Selectors
+
+We have type A with a foreign key relation to type B:
+
+```typescript
+type A = { id: string, b_id: string };
+type B = { id: string, value: number };
+```
+
+This code for `lookupB` has some issues:
+
+```typescript
+// standard selectors
+const selectFeatureA = createFeatureSelector<EntityState<A>>(A_FEATURE_KEY);
+export const entityA = (id: string) => createSelector(selectFeatureA, (feature) => feature.entities[id]);
+
+const selectFeatureB = createFeatureSelector<EntityState<B>>(B_FEATURE_KEY);
+export const allB = createSelector(selectFeatureB, adapterB.getSelectors().selectAll);
+export const entityB = (id: string) => createSelector(selectFeatureB, (feature) => feature.entities[id]);
+
+// now we want to lookup B for A
+export const lookupB = (
+  idA: string,
+) => createSelector(
+  entityA(idA),
+  allB,  //  <--- (a) much more than we need
+  (a, bs) => bs.find(b => b.id === a.b_id)  //  <--- (b) array.find instead of NgRx entity ID lookup
+);
+```
+
+- issue (a) because we cannot yet say which item we want, we request all
+- issue (b) instead of using the more efficient `entityB` lookup, we run `array.find`
+
+The problem arises because `createSelector` potentially runs its selectors in parallel, so they cannot in parallel.
+Moreover, when writing selectors, there is no `Store` available to perform lookups inside.
+
+There seem two approaches:
+
+- from the outside, `(idA, idB) => store.select(lookupA(idA)).pipe(switchMap(a => store.select(lookupB(idB))))`
+- from the inside, `(idA, idB) => store.select(lookup(store, idA, idB))`
+
+_Now which is better?_
+
+Both approaches probably lead to the same runtime code.
+
+The outside code has shorter parameter lists, but clutters the client code with glue logic. The NgRx linter
+may complain about the `select(...).pipe(...)` and tell you that this should be another selector instead.
+
+The inside code has longer parameter lists, growing with each level of nesting.
+
+
+... todo
+
+## Join
+
+... todo
+
+
 # Rest
 
 I usually prefer to use one feature for each entity collection in the store;
